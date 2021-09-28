@@ -7,7 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using MoviesApi.Filters;
+using MoviesApi.Helpers;
 
 namespace MoviesApi
 {
@@ -23,14 +26,21 @@ namespace MoviesApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ApplicationDbContext>(options => 
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddCors(options =>
             {
-                var frontendURL = Configuration.GetValue<string>("frontendUrl");
+                var frontendUrl = Configuration.GetValue<string>("frontendUrl");
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins(frontendURL).AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins(frontendUrl).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(new string[]{"totalAmountOfRecords"});
                 });
             });
+
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddScoped<IFileStorageService, AzureStorageService>();
 
             services.AddControllers(options =>
             {
@@ -45,7 +55,7 @@ namespace MoviesApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
            
             if (env.IsDevelopment())
@@ -54,6 +64,7 @@ namespace MoviesApi
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MoviesApi v1"));
             }
+           
 
             app.UseHttpsRedirection();
 
