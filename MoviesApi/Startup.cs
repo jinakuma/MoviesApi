@@ -6,11 +6,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using MoviesApi.Filters;
 using MoviesApi.Helpers;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 namespace MoviesApi
 {
@@ -26,9 +29,13 @@ namespace MoviesApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Microsoft.EntityFrameworkCore.SqlServer
             services.AddDbContext<ApplicationDbContext>(options => 
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.UseNetTopologySuite()));
 
+           
+            //Allow cross-origin request to the 'frontendURL' 
             services.AddCors(options =>
             {
                 var frontendUrl = Configuration.GetValue<string>("frontendUrl");
@@ -40,6 +47,17 @@ namespace MoviesApi
 
             services.AddAutoMapper(typeof(Startup));
 
+            //Dependency injection of GeometryFactory into AutoMapper class 
+            services.AddSingleton(provider => new MapperConfiguration(config =>
+            {
+                var geometryFactory = provider.GetRequiredService<GeometryFactory>();
+                config.AddProfile(new AutoMapperProfiles(geometryFactory));
+            }).CreateMapper());
+
+            //Microsoft.EntityFrameworkCore.SqlService.NetTopologySuite
+            services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+
+            //Azure.Storage.Blobs
             services.AddScoped<IFileStorageService, AzureStorageService>();
 
             services.AddControllers(options =>
@@ -70,6 +88,7 @@ namespace MoviesApi
 
             app.UseRouting();
 
+            //Cors must me after Routing and before Authorization
             app.UseCors();
 
             app.UseAuthorization();

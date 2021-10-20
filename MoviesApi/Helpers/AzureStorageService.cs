@@ -11,11 +11,11 @@ namespace MoviesApi.Helpers
 {
     public class AzureStorageService:IFileStorageService
     {
-        private readonly string connectionString;
+        private readonly string _connectionString;
 
         public AzureStorageService(IConfiguration configuration)
         {
-            connectionString = configuration.GetConnectionString("AzureStorageConnection");
+            _connectionString = configuration.GetConnectionString("AzureStorageConnection");
         }
         public async Task DeleteFile(string fileRoute, string containerName)
         {
@@ -23,7 +23,7 @@ namespace MoviesApi.Helpers
             {
                 return;
             }
-            var client = new BlobContainerClient(connectionString, containerName);
+            var client = new BlobContainerClient(_connectionString, containerName);
             await client.CreateIfNotExistsAsync();
             var fileName = Path.GetFileName(fileRoute);
             var blob = client.GetBlobClient(fileName);
@@ -33,7 +33,7 @@ namespace MoviesApi.Helpers
 
         public async Task<string> SaveFile(string containerName, IFormFile file)
         {
-            var client = new BlobContainerClient(connectionString, containerName);
+            var client = new BlobContainerClient(_connectionString, containerName);
             await client.CreateIfNotExistsAsync();
             client.SetAccessPolicy(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
 
