@@ -63,6 +63,21 @@ namespace MoviesApi.Controllers
 
         }
 
+        [HttpPost("searchByName")]
+        public async Task<ActionResult<List<ActorsMovieDTO>>> SearchByName([FromBody] string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return new List<ActorsMovieDTO>();
+            }
+
+            return await _context.Actors.Where(x => x.Name.Contains(name))
+                .OrderBy(x => x.Name)
+                .Select(x => new ActorsMovieDTO() {Id = x.Id, Name = x.Name, Picture = x.Picture})
+                .Take(5).ToListAsync();
+        }
+
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, [FromForm] ActorCreationDTO actorCreationDTO)
         {
