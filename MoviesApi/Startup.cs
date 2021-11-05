@@ -58,7 +58,10 @@ namespace MoviesApi
             services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
             //Azure.Storage.Blobs
-            services.AddScoped<IFileStorageService, AzureStorageService>();
+            //services.AddScoped<IFileStorageService, AzureStorageService>();
+
+            services.AddScoped<IFileStorageService, FirebaseFileStorageService>();
+
 
             services.AddControllers(options =>
             {

@@ -137,7 +137,7 @@ namespace MoviesApi.Controllers
             return _mapper.Map<List<MovieDTO>>(movies);
         }
 
-        [HttpPost("PostGet")]
+        [HttpPost("postget")]
         public async Task<ActionResult<MoviePostGetDTO>> PostGet()
         {
             var movieTheaters = await _context.MovieTheaters.OrderBy(x=>x.Name).ToListAsync();
