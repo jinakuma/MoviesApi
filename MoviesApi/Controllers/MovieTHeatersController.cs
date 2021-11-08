@@ -12,12 +12,12 @@ namespace MoviesApi.Controllers
 {
     [Route("api/movietheaters")]
     [ApiController]
-    public class MovieTHeatersController : Controller
+    public class MovieTheatersController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public MovieTHeatersController(ApplicationDbContext context, IMapper mapper)
+        public MovieTheatersController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;

@@ -11,7 +11,7 @@ namespace MoviesApi.DTOs
 {
     public class MovieCreationDTO
     {
-     
+       
         
         public string Title { get; set; }
         public string Summary { get; set; }
@@ -22,9 +22,11 @@ namespace MoviesApi.DTOs
 
         [ModelBinder(BinderType=typeof(TypeBinder<List<int>>))]
         public List<int> GenresIds { get; set; }
+
         [ModelBinder(BinderType = typeof(TypeBinder<List<int>>))]
-        public List<int> MovieTheatersId { get; set; }
-        [ModelBinder(BinderType = typeof(TypeBinder<MoviesActorsCreationDTO>))]
+        public List<int> MovieTheatersIds { get; set; }
+
+        [ModelBinder(BinderType = typeof(TypeBinder<List<MoviesActorsCreationDTO>>))]
         public List<MoviesActorsCreationDTO> Actors { get; set; }
         
     }

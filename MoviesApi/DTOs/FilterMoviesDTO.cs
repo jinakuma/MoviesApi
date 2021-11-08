@@ -9,7 +9,7 @@ namespace MoviesApi.DTOs
     {
         public int Page { get; set; }
         public int RecordPerPage { get; set; }
-        public PaginationDTO PaginationDTO => new PaginationDTO(){Page= Page, RecordPerPage = RecordPerPage};
+        public PaginationDTO PaginationDTO => new PaginationDTO{Page= Page, RecordsPerPage = RecordPerPage};
         public string Title { get; set; }
         public int GenreId { get; set; }
         public bool InTheaters { get; set; }

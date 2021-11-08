@@ -41,7 +41,7 @@ namespace MoviesApi
                 var frontendUrl = Configuration.GetValue<string>("frontendUrl");
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins(frontendUrl).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(new string[]{"totalAmountOfRecords"});
+                    builder.WithOrigins(frontendUrl).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("totalAmountOfRecords");
                 });
             });
 
@@ -57,10 +57,18 @@ namespace MoviesApi
             //Microsoft.EntityFrameworkCore.SqlService.NetTopologySuite
             services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
-            //Azure.Storage.Blobs
+
+            // Save files in Azure.Storage.Blobs
             //services.AddScoped<IFileStorageService, AzureStorageService>();
 
+
+            // Save files in Firebase Storage Cloud.
             services.AddScoped<IFileStorageService, FirebaseFileStorageService>();
+
+
+            // Save files in app folder
+            //services.AddScoped<IFileStorageService, InAppStorageService>();
+            //services.AddHttpContextAccessor();
 
 
             services.AddControllers(options =>

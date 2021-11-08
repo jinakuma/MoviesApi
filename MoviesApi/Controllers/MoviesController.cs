@@ -39,7 +39,7 @@ namespace MoviesApi.Controllers
                 .ToListAsync();
             var homeDTO = new HomeDTO
             {
-                UpcomingRealeses = _mapper.Map<List<MovieDTO>>(upcomingReleases),
+                UpcomingReleases = _mapper.Map<List<MovieDTO>>(upcomingReleases),
                 InTheaters = _mapper.Map<List<MovieDTO>>(inTheaters)
             };
             return homeDTO;
@@ -91,22 +91,31 @@ namespace MoviesApi.Controllers
 
         }
 
-        [HttpPut("id:int")]
-        public async Task<ActionResult> Put(int id, [FromForm] MovieCreationDTO movieCreatinDTO)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, [FromForm] MovieCreationDTO movieCreationDTO)
         {
             var movie = await _context.Movies.Include(x => x.MoviesActors)
                 .Include(x => x.MoviesGenres).Include(x => x.MovieTheatersMovies).FirstOrDefaultAsync(x => x.Id == id);
-            if (movieCreatinDTO.Poster != null)
+
+            if (movie == null)
             {
-                movie.Poster = await _fileStorageService.EditFile(container, movieCreatinDTO.Poster, movie.Poster);
+                return NotFound();
             }
+
+            movie = _mapper.Map(movieCreationDTO, movie);
+
+            if (movieCreationDTO.Poster != null)
+            {
+                movie.Poster = await _fileStorageService.EditFile(container, movieCreationDTO.Poster, movie.Poster);
+            }
+
             AnnotateActorsOrder(movie);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpGet("filter")]
-        public async Task<ActionResult<List<MovieDTO>>> Filter([FromBody] FilterMoviesDTO filterMoviesDTO)
+        public async Task<ActionResult<List<MovieDTO>>> Filter([FromQuery] FilterMoviesDTO filterMoviesDTO)
         {
             var moviesQueryable = _context.Movies.AsQueryable();
             if (!string.IsNullOrEmpty(filterMoviesDTO.Title))
@@ -137,14 +146,14 @@ namespace MoviesApi.Controllers
             return _mapper.Map<List<MovieDTO>>(movies);
         }
 
-        [HttpPost("postget")]
+        [HttpGet("postget")]
         public async Task<ActionResult<MoviePostGetDTO>> PostGet()
         {
             var movieTheaters = await _context.MovieTheaters.OrderBy(x=>x.Name).ToListAsync();
             var genres = await _context.Genres.OrderBy(x => x.Name).ToListAsync();
             var movieTheatersDTO = _mapper.Map<List<MovieTheaterDTO>>(movieTheaters);
             var genresDTO = _mapper.Map<List<GenreDTO>>(genres);
-            return new MoviePostGetDTO(){Genres = genresDTO, MovieTheaters = movieTheatersDTO};
+            return new MoviePostGetDTO{Genres = genresDTO, MovieTheaters = movieTheatersDTO};
 
         }
 

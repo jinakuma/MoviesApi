@@ -19,7 +19,7 @@ namespace MoviesApi.Helpers
             }
 
             double count = await queryable.CountAsync();
-            httpContext.Response.Headers.Add("totalAmountOffRecord", count.ToString());
+            httpContext.Response.Headers.Add("totalAmountOfRecords", count.ToString());
         }
     }
 }

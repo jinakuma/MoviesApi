@@ -3,13 +3,13 @@
     public class PaginationDTO
     {
         public int Page { get; set; } = 1;
-        private int _recordsPerPage = 10;
-        private readonly int maxAmount = 50;
+        private int recordsPerPage = 5;
+        private const int MaxAmount = 50;
 
-        public int RecordPerPage
+        public int RecordsPerPage
         {
-            get => _recordsPerPage;
-            set => _recordsPerPage = (value > maxAmount) ? maxAmount : value;
+            get => recordsPerPage;
+            set => recordsPerPage = (value > MaxAmount) ? MaxAmount : value;
         }
     }
 }
