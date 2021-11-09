@@ -8,8 +8,8 @@ namespace MoviesApi.DTOs
     public class FilterMoviesDTO
     {
         public int Page { get; set; }
-        public int RecordPerPage { get; set; }
-        public PaginationDTO PaginationDTO => new PaginationDTO{Page= Page, RecordsPerPage = RecordPerPage};
+        public int RecordsPerPage { get; set; }
+        public PaginationDTO PaginationDto => new PaginationDTO { Page = Page, RecordsPerPage = RecordsPerPage };
         public string Title { get; set; }
         public int GenreId { get; set; }
         public bool InTheaters { get; set; }

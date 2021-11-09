@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +17,7 @@ namespace MoviesApi.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFileStorageService _fileStorageService;
-        private string container = "movies";
+        private readonly string container = "movies";
 
         public MoviesController(ApplicationDbContext context, IMapper mapper, IFileStorageService fileStorageService)
         {
@@ -37,12 +35,12 @@ namespace MoviesApi.Controllers
                 .OrderBy(x => x.ReleaseDate).Take(top).ToListAsync();
             var inTheaters = await _context.Movies.Where(x => x.InTheaters).OrderBy(x => x.ReleaseDate).Take(top)
                 .ToListAsync();
-            var homeDTO = new HomeDTO
+            var homeDto = new HomeDTO
             {
                 UpcomingReleases = _mapper.Map<List<MovieDTO>>(upcomingReleases),
                 InTheaters = _mapper.Map<List<MovieDTO>>(inTheaters)
             };
-            return homeDTO;
+            return homeDto;
         }
 
         [HttpGet("{id:int}")]
@@ -77,22 +75,24 @@ namespace MoviesApi.Controllers
             var movieTheatersIds = movie.MovieTheaters.Select(x => x.Id).ToList();
             var nonSelectedMovieTheaters =
                 await _context.MovieTheaters.Where(x => !movieTheatersIds.Contains(x.Id)).ToListAsync();
-            var nonSelectedGenresDTOs = _mapper.Map<List<GenreDTO>>(nonSelectedGenres);
-            var nonSelectedMovieTheatersDTO = _mapper.Map<List<MovieTheaterDTO>>(nonSelectedMovieTheaters);
+            var nonSelectedGenresDtos = _mapper.Map<List<GenreDTO>>(nonSelectedGenres);
+            var nonSelectedMovieTheatersDto = _mapper.Map<List<MovieTheaterDTO>>(nonSelectedMovieTheaters);
 
-            var response = new MoviePutGetDTO();
-            response.Movie = movie;
-            response.SelectedGenres = movie.Genres;
-            response.NonSelectedGenres = nonSelectedGenresDTOs;
-            response.SelectedMovieTheaters = movie.MovieTheaters;
-            response.NonSelectedMovieTheaters = nonSelectedMovieTheatersDTO;
-            response.Actors = movie.Actors;
+            var response = new MoviePutGetDTO
+            {
+                Movie = movie,
+                SelectedGenres = movie.Genres,
+                NonSelectedGenres = nonSelectedGenresDtos,
+                SelectedMovieTheaters = movie.MovieTheaters,
+                NonSelectedMovieTheaters = nonSelectedMovieTheatersDto,
+                Actors = movie.Actors
+            };
             return response;
 
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(int id, [FromForm] MovieCreationDTO movieCreationDTO)
+        public async Task<ActionResult> Put(int id, [FromForm] MovieCreationDTO movieCreationDto)
         {
             var movie = await _context.Movies.Include(x => x.MoviesActors)
                 .Include(x => x.MoviesGenres).Include(x => x.MovieTheatersMovies).FirstOrDefaultAsync(x => x.Id == id);
@@ -102,11 +102,11 @@ namespace MoviesApi.Controllers
                 return NotFound();
             }
 
-            movie = _mapper.Map(movieCreationDTO, movie);
+            movie = _mapper.Map(movieCreationDto, movie);
 
-            if (movieCreationDTO.Poster != null)
+            if (movieCreationDto.Poster != null)
             {
-                movie.Poster = await _fileStorageService.EditFile(container, movieCreationDTO.Poster, movie.Poster);
+                movie.Poster = await _fileStorageService.EditFile(container, movieCreationDto.Poster, movie.Poster);
             }
 
             AnnotateActorsOrder(movie);
@@ -115,33 +115,33 @@ namespace MoviesApi.Controllers
         }
 
         [HttpGet("filter")]
-        public async Task<ActionResult<List<MovieDTO>>> Filter([FromQuery] FilterMoviesDTO filterMoviesDTO)
+        public async Task<ActionResult<List<MovieDTO>>> Filter([FromQuery] FilterMoviesDTO filterMoviesDto)
         {
             var moviesQueryable = _context.Movies.AsQueryable();
-            if (!string.IsNullOrEmpty(filterMoviesDTO.Title))
+            if (!string.IsNullOrEmpty(filterMoviesDto.Title))
             {
-                moviesQueryable = moviesQueryable.Where(x => x.Title.Contains(filterMoviesDTO.Title));
+                moviesQueryable = moviesQueryable.Where(x => x.Title.Contains(filterMoviesDto.Title));
             }
 
-            if (filterMoviesDTO.InTheaters)
+            if (filterMoviesDto.InTheaters)
             {
                 moviesQueryable = moviesQueryable.Where(x => x.InTheaters);
             }
 
-            if (filterMoviesDTO.UpcomingReleases)
+            if (filterMoviesDto.UpcomingReleases)
             {
                 var today = DateTime.Today;
                 moviesQueryable = moviesQueryable.Where(x => x.ReleaseDate > today);
             }
 
-            if (filterMoviesDTO.GenreId != 0)
+            if (filterMoviesDto.GenreId != 0)
             {
                 moviesQueryable = moviesQueryable.Where(x =>
-                    x.MoviesGenres.Select(y => y.GenreId).Contains(filterMoviesDTO.GenreId));
+                    x.MoviesGenres.Select(y => y.GenreId).Contains(filterMoviesDto.GenreId));
             }
 
             await HttpContext.InsertParametersPaginationInHeader(moviesQueryable);
-            var movies = await moviesQueryable.OrderBy(x => x.Title).Paginate(filterMoviesDTO.PaginationDTO)
+            var movies = await moviesQueryable.OrderBy(x => x.Title).Paginate(filterMoviesDto.PaginationDto)
                 .ToListAsync();
             return _mapper.Map<List<MovieDTO>>(movies);
         }
@@ -158,12 +158,12 @@ namespace MoviesApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> Post([FromForm] MovieCreationDTO movieCreationDTO)
+        public async Task<ActionResult<int>> Post([FromForm] MovieCreationDTO movieCreationDto)
         {
-            var movie = _mapper.Map<Movie>(movieCreationDTO);
-            if (movieCreationDTO.Poster != null)
+            var movie = _mapper.Map<Movie>(movieCreationDto);
+            if (movieCreationDto.Poster != null)
             {
-                movie.Poster = await _fileStorageService.SaveFile(container, movieCreationDTO.Poster);
+                movie.Poster = await _fileStorageService.SaveFile(container, movieCreationDto.Poster);
             }
             AnnotateActorsOrder(movie);
             _context.Add(movie);

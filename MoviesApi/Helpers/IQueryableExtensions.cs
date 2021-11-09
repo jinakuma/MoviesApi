@@ -8,10 +8,10 @@ namespace MoviesApi.Helpers
 {
     public static class IQueryableExtensions
     {
-        public static IQueryable<T> Paginate<T>(this IQueryable<T> queryable, PaginationDTO paginationDTO)
+        public static IQueryable<T> Paginate<T>(this IQueryable<T> queryable, PaginationDTO paginationDto)
         {
-            return queryable.Skip((paginationDTO.Page - 1) * paginationDTO.RecordsPerPage)
-                .Take(paginationDTO.RecordsPerPage);
+            return queryable.Skip((paginationDto.Page - 1) * paginationDto.RecordsPerPage)
+                .Take(paginationDto.RecordsPerPage);
         }
     }
 }
