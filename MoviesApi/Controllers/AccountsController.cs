@@ -42,33 +42,33 @@ namespace MoviesAPI.Controllers
             _mapper = mapper;
         }
 
-        //[HttpGet("listUsers")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
-        //public async Task<ActionResult<List<UserDTO>>> GetListUsers([FromQuery] PaginationDTO paginationDTO)
-        //{
-        //    var queryable = _context.Users.AsQueryable();
-        //    await HttpContext.InsertParametersPaginationInHeader(queryable);
-        //    var users = await queryable.OrderBy(x => x.Email).Paginate(paginationDTO).ToListAsync();
-        //    return _mapper.Map<List<UserDTO>>(users);
-        //}
+        [HttpGet("listUsers")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
+        public async Task<ActionResult<List<UserDTO>>> GetListUsers([FromQuery] PaginationDTO paginationDTO)
+        {
+            var queryable = _context.Users.AsQueryable();
+            await HttpContext.InsertParametersPaginationInHeader(queryable);
+            var users = await queryable.OrderBy(x => x.Email).Paginate(paginationDTO).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
 
-        //[HttpPost("makeAdmin")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
-        //public async Task<ActionResult> MakeAdmin([FromBody] string userId)
-        //{
-        //    var user = await _userManager.FindByIdAsync(userId);
-        //    await _userManager.AddClaimAsync(user, new Claim("role", "admin"));
-        //    return NoContent();
-        //}
+        [HttpPost("makeAdmin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
+        public async Task<ActionResult> MakeAdmin([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.AddClaimAsync(user, new Claim("role", "admin"));
+            return NoContent();
+        }
 
-        //[HttpPost("removeAdmin")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
-        //public async Task<ActionResult> RemoveAdmin([FromBody] string userId)
-        //{
-        //    var user = await _userManager.FindByIdAsync(userId);
-        //    await _userManager.RemoveClaimAsync(user, new Claim("role", "admin"));
-        //    return NoContent();
-        //}
+        [HttpPost("removeAdmin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
+        public async Task<ActionResult> RemoveAdmin([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.RemoveClaimAsync(user, new Claim("role", "admin"));
+            return NoContent();
+        }
 
         [HttpPost("create")]
         public async Task<ActionResult<AuthenticationResponse>> Create(
@@ -110,7 +110,7 @@ namespace MoviesAPI.Controllers
             {
                 new Claim("email", userCredentials.Email)
             };
-
+                      
             var user = await _userManager.FindByNameAsync(userCredentials.Email);
             var claimsDB = await _userManager.GetClaimsAsync(user);
 
